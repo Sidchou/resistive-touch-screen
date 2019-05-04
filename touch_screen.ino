@@ -24,31 +24,37 @@ const int Y2 = A2;
 
 int tempX[10];
 int tempY[10];
-const int LED13 = 13; 
+const int motor = 9;
+ long timer = 0;
+ 
 
 boolean swiftLeft();
-boolean swiftright();
+boolean swiftRight();
+boolean swiftUp();
+boolean swiftDown();
 
 void setup()
 {
-  pinMode(LED13, OUTPUT);
+  pinMode(motor, OUTPUT);
    Serial.begin(9600);
-//resetArray()÷;
+   timer = millis();
+//resetArray();
 }
 
 void loop(){
+  
   //"push" and "splice" array
   for (int i = 8; i >= 0; i--) {
-    if (i<3){
-    Serial.print("X = ");  
-   Serial.print (tempX[i]);
+//    if (i<3){
+//    Serial.print("X = ");  
+//   Serial.print (tempX[i]);
 //   Serial.print(" Y = ");
 //   Serial.print(tempY[i]);
-    }
+//    }
 tempX[i + 1] = tempX[i];
-//tempY[i + 1] = tempY[i];
+tempY[i + 1] = tempY[i];
 }
-Serial.println("");
+//Serial.println("");
   int X,Y; //Touch Coordinates are stored in X,Y variable
    pinMode(Y1,INPUT);
    pinMode(Y2,INPUT);  
@@ -58,19 +64,19 @@ Serial.println("");
    pinMode(X2,OUTPUT);
    digitalWrite(X2,LOW);
    X = (analogRead(Y1)); //Reads X axis touch position
-//   pinMode(X1,INPUT);
-//   pinMode(X2,INPUT);
-//   digitalWrite(X2,LOW);
-//   pinMode(Y1,OUTPUT);
-//   digitalWrite(Y1,HIGH);
-//   pinMode(Y2,OUTPUT);
-//   digitalWrite(Y2,LOW);
-//   Y = (analogRead(X1)); //Reads Y axis touch position
+   pinMode(X1,INPUT);
+   pinMode(X2,INPUT);
+   digitalWrite(X2,LOW);
+   pinMode(Y1,OUTPUT);
+   digitalWrite(Y1,HIGH);
+   pinMode(Y2,OUTPUT);
+   digitalWrite(Y2,LOW);
+   Y = (analogRead(X1)); //Reads Y axis touch position
   //Display X and Y on Serial Monitor
    
 //add first element
    tempX[0] = X;
-//   tempY[0] = Y;
+   tempY[0] = Y;
 
 //    Serial.print("X = ");  
 //   Serial.print (tempX[0]);
@@ -79,16 +85,35 @@ Serial.println("");
    delay(30);
 
 if (swiftLeft()){
-  Serial.println("left");
-//  resetArray();
+//  Serial.println("Left");
+  Serial.write(1);
+   timer = millis();
       }
 if(swiftRight()){
-  Serial.println("right");
-//  resetArray();
+//  Serial.println("Right");
+  Serial.write(2);
+     timer = millis();
+
+  
   }
+  if (swiftUp()){
+//  Serial.println("Up");
+  Serial.write(3);
+     timer = millis();
+
+      }
+if(swiftDown()){
+//  Serial.println("Down");
+  Serial.write(4);
+     timer = millis();
+
+  }
+
+  vibration();
+
 }
 
-boolean swiftLeft(){
+boolean swiftRight(){
   int beginPoint = 3; 
   int range = 3; 
   int trueCount = 0;
@@ -113,16 +138,78 @@ boolean swiftLeft(){
  } 
 
 //
-boolean swiftRight(){
-  
-  for (int i = 0; i < 6 ; i ++){
-  if (tempX[i+1]-tempX[i]<10){
+boolean swiftLeft(){
+  int beginPoint = 3; 
+  int range = 3; 
+  int trueCount = 0;
+  int falseCount = 0;
+  for (int j = beginPoint; j<beginPoint+range; j++){
+    bool goodShit = true;
+    for (int i = 0; i < j ; i ++){
+      if (tempX[i+1]-tempX[i]<10){
+        falseCount++;
+        goodShit = false; 
+        break;
+      } 
+    }
+    if (goodShit){
+      trueCount++;
+    } 
+  }
+  if (trueCount > falseCount){
+    return true;  
+  }
   return false;
-  } 
-  } 
+  }
+
   
-return true;
-  
+boolean swiftUp(){
+  int beginPoint = 3; 
+  int range = 3; 
+  int trueCount = 0;
+  int falseCount = 0;
+  for (int j = beginPoint; j<beginPoint+range; j++){
+    bool goodShit = true;
+    for (int i = 0; i < j ; i ++){
+      if (tempY[i]-tempY[i+1]<10){
+        falseCount++;
+        goodShit = false; 
+        break;
+      } 
+    }
+    if (goodShit){
+      trueCount++;
+    } 
+  }
+  if (trueCount > falseCount){
+    return true;  
+  }
+  return false;
+ } 
+
+//
+boolean swiftDown(){
+  int beginPoint = 3; 
+  int range = 3; 
+  int trueCount = 0;
+  int falseCount = 0;
+  for (int j = beginPoint; j<beginPoint+range; j++){
+    bool goodShit = true;
+    for (int i = 0; i < j ; i ++){
+      if (tempY[i+1]-tempY[i]<10){
+        falseCount++;
+        goodShit = false; 
+        break;
+      } 
+    }
+    if (goodShit){
+      trueCount++;
+    } 
+  }
+  if (trueCount > falseCount){
+    return true;  
+  }
+  return false;
   }
 
   void resetArray(){
@@ -131,3 +218,17 @@ tempX[i] = -10;
 //tempY[i] = -10;
 }
     }
+
+    void vibration(){
+      if (millis()-timer < 300){
+      digitalWrite(motor,HIGH);
+      }else if (millis()-timer < 400){
+      digitalWrite(motor,LOW);
+      }else if (millis()-timer < 700){
+      digitalWrite(motor,HIGH);
+      }else{
+      digitalWrite(motor,LOW);
+      }
+      }
+
+    
